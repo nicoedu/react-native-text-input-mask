@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, forwardRef } from 'react'
 
 import {
   TextInput,
@@ -10,9 +10,8 @@ import {
 const mask = NativeModules.RNTextInputMask.mask
 const unmask = NativeModules.RNTextInputMask.unmask
 const setMask = NativeModules.RNTextInputMask.setMask
-export { mask, unmask, setMask }
 
-export default class TextInputMask extends Component {
+class TextInputMask extends Component {
   static defaultProps = {
     maskDefaultValue: true,
   }
@@ -34,7 +33,7 @@ export default class TextInputMask extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.mask && (this.props.value !== nextProps.value)) {
       mask(this.props.mask, '' + nextProps.value, text =>
       this.input && this.input.setNativeProps({ text })
@@ -69,3 +68,26 @@ export default class TextInputMask extends Component {
     />);
   }
 }
+
+const ForwardedTextInputMask = ({ mask, ...props }, ref) => (
+  <TextInputMask
+    // Force remount an component, to fix problem with
+    // https://github.com/react-native-community/react-native-text-input-mask/issues/150
+    key={mask}
+    {...props}
+    mask={mask}
+    refInput={textInputInstance => {
+      if (ref) {
+        if (typeof ref === "function") {
+          ref(textInputInstance);
+        } else if (typeof ref === "object") {
+          ref.current = textInputInstance;
+        }
+      }
+    }}
+  />
+);
+
+export { mask, unmask, setMask };
+
+export default forwardRef(ForwardedTextInputMask);
