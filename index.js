@@ -48,7 +48,7 @@ class TextInputMask extends Component {
   render() {
     return (<TextInput
       {...this.props}
-      value={undefined}
+      value={this.props.mask ? this.props.masked : this.props.value}
       ref={ref => {
         this.input = ref
         if (typeof this.props.refInput === 'function') {
